@@ -9,4 +9,8 @@ wheels/
 # Virtual environments
 .venv
 static/
-
+.env
+*.hcl
+*.tfstate
+*.backup
+.terraform
