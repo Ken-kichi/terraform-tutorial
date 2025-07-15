@@ -1,8 +1,8 @@
 # Azure のリソースグループを作成します
 # リソースグループとは、Azure上の複数のリソース（VM、DB、Appなど）をまとめて管理する「フォルダ」のようなものです
 resource "azurerm_resource_group" "this" {
-  name     = var.name       # リソースグループの名前（例: "rg-myproject"）
-  location = var.location   # Azureリージョン（例: "Sweden Central"）
+  name     = var.name     # リソースグループの名前（例: "rg-myproject"）
+  location = var.location # Azureリージョン（例: "Sweden Central"）
 }
 
 # リソースグループの名前を外部（他のモジュールなど）に出力します
