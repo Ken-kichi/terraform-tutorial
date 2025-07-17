@@ -30,7 +30,7 @@ if uploaded_file:
     client = generate_ai.get_client()
 
     # 画像処理中はスピナーを表示
-    with st.spinner("画像を読み込んでいます..."):
+    with st.spinner("Loading..."):
         # 一時ファイルの画像から内容説明文をAIで生成
         description = generate_ai.get_image_description(
             image_path=tmp_file_path,
@@ -54,6 +54,6 @@ if uploaded_file:
         # 画像が正しく保存されていれば「Anime Style」タブに表示
         if image_path and os.path.exists(image_path):
             tab1.image(image_path, use_container_width=True)
-            st.success("画像生成が完了しました！")
+            st.success("image generated")
         else:
-            st.info("まだ画像が生成されていません。")
+            st.info("image not generated")

@@ -1,20 +1,21 @@
-from dotenv import load_dotenv
 from openai import AzureOpenAI
 import base64
 import requests
 from datetime import datetime
 import os
-
-# .envファイルから環境変数を読み込む
-load_dotenv()
+from azure.identity import DefaultAzureCredential
+from azure.keyvault.secrets import SecretClient
 
 class GenerateAI:
     def __init__(self):
+        credential = DefaultAzureCredential()
+        self.client = SecretClient(vault_url="https://kv-ai-founder.vault.azure.net/", credential=credential)
+
         # 各種APIキーやエンドポイントを環境変数から取得
-        self.api_key:str =os.getenv("AZURE-GPT-4o-MINI-API-KEY")
-        self.endpoint:str = os.getenv("AZURE-GPT-4o-MINI-URL")
-        self.img_api_key:str =os.getenv("AZURE-DALL-E-3-API-KEY")
-        self.img_endpoint:str = os.getenv("AZURE-DALL-E-3-URL")
+        self.api_key:str =self.client.get_secret("AZURE-GPT-4o-MINI-API-KEY").value
+        self.endpoint:str = self.client.get_secret("AZURE-GPT-4o-MINI-URL").value
+        self.img_api_key:str =self.client.get_secret("AZURE-DALL-E-3-API-KEY").value
+        self.img_endpoint:str = self.client.get_secret("AZURE-DALL-E-3-URL").value
 
     # OpenAIのクライアントを作成する
     def get_client(self)->AzureOpenAI:
@@ -94,6 +95,8 @@ class GenerateAI:
     def save_image(self,image_url:str)->str:
         response = requests.get(image_url)
         if response.status_code == 200:
+            if not os.path.exists("static"):
+                os.makedirs("static")
             # 保存するファイル名を作成（日時で一意にする）
             file_name = f"static/anime_image_{datetime.now().strftime('%Y%m%d%H%M%S')}.png"
             with open(file_name, "wb") as f:
@@ -116,29 +119,29 @@ def main():
         image_path=image_path,
         client=client,
         )
-    print("画像説明:", description)
+    print("image description:", description)
     print("----------")
 
     # # ステップ2: アニメ用プロンプトを作成
     anime_prompt = generate_ai.build_anime_prompt(description)
-    print("生成プロンプト:", anime_prompt)
+    print("generated prompt:", anime_prompt)
     print("----------")
 
     # ステップ3: 可愛い女の子のアニメ画像を生成（サンプルプロンプトを使用）
     anime_image_url = generate_ai.generate_anime_image(
         prompt="A cute anime girl with big sparkling eyes, long flowing hair, wearing a pastel-colored dress, smiling gently, surrounded by soft light and cherry blossoms, in the style of Japanese anime, highly detailed, vibrant colors, Ghibli-inspired"
         )
-    print("生成された画像URL:", anime_image_url)
+    print("generated image url:", anime_image_url)
     # ステップ3: 画像説明から作ったプロンプトでも画像を生成
     anime_image_url = generate_ai.generate_anime_image(
         prompt=anime_prompt
         )
-    print("生成された画像URL:", anime_image_url)
+    print("generated image url:", anime_image_url)
 
     # ステップ4: 画像を保存
     save_path = "static/anime_image.png"
     generate_ai.save_image(anime_image_url)
-    print(f"画像を保存しました: {save_path}")
+    print(f"saved image: {save_path}")
 
 # このファイルが直接実行された場合のみmain()を呼び出す
 if __name__ == "__main__":
